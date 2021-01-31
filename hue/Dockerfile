@@ -1,6 +1,6 @@
 FROM gethue/hue:latest
 
-MAINTAINER Aditya Pal <aditya.pal.science@gmail.com>
+LABEL maintainer="Ravi Singh"
 
 ADD configs/hue.ini /usr/share/hue/desktop/conf/hue.ini
 ADD configs/hue.ini /usr/share/hue/desktop/conf/hue-overrides.ini 

@@ -1,6 +1,6 @@
-FROM sciencepal/hadoop_cluster:hive
+FROM rsins/spark_cluster:hive
 
-MAINTAINER Aditya Pal <aditya.pal.science@gmail.com>
+LABEL maintainer="Ravi Singh"
 
 USER root
 

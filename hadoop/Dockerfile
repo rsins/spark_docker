@@ -1,6 +1,6 @@
 FROM ubuntu
 
-MAINTAINER Aditya Pal <aditya.pal.science@gmail.com>
+LABEL maintainer="Ravi Singh"
 
 USER root
 

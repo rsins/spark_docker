@@ -1,4 +1,6 @@
+>
 >This Repo is based on [https://github.com/sciencepal/dockers](https://github.com/sciencepal/dockers) and modified for my own customizations.
+>
 
 This repo was started initially with an aim of creating a 3 node hadoop cluster having 1 master and 2 worker nodes with Hadoop, Hive and Spark using docker.io containers. You can read more about the original project here: https://medium.com/@aditya.pal/setup-a-3-node-hadoop-spark-hive-cluster-from-scratch-using-docker-332dae6b98d0
 
