@@ -48,15 +48,20 @@ function startServices {
   echo ">> Starting Zeppelin ..."
   docker exec -u hadoop -d zeppelin /home/hadoop/zeppelin/bin/zeppelin-daemon.sh start
 
-  echo "Hadoop info @ nodemaster: http://172.20.1.1:8088/cluster"
-  echo "DFS Health @ nodemaster : http://172.20.1.1:50070/dfshealth"
+  echo 
+  echo "Hadoop info @ nodemaster          : http://172.20.1.1:8088/cluster     & from host @ http://localhost:8088/cluster"
+  echo "DFS Health @ nodemaster           : http://172.20.1.1:50070/dfshealth"
   echo "MR-JobHistory Server @ nodemaster : http://172.20.1.1:19888"
-  echo "Spark info @ nodemaster  : http://172.20.1.1:8080"
-  echo "Spark History Server @ nodemaster : http://172.20.1.1:18080"
-  echo "Zookeeper @ edge : http://172.20.1.5:2181"
-  echo "Kafka @ edge : http://172.20.1.5:9092"
-  echo "Nifi @ edge : http://172.20.1.5:8080/nifi & from host @ http://localhost:8080/nifi"
-  echo "Zeppelin @ zeppelin : http://172.20.1.6:8081 & from host @ http://localhost:8081"
+  echo "Spark info @ nodemaster           : http://172.20.1.1:8080"
+  echo "Spark History Server @ nodemaster : http://172.20.1.1:18080            & from host @ http://localhost:18080"
+  echo "Zookeeper @ edge                  : http://172.20.1.5:2181"
+  echo "Kafka @ edge                      : http://172.20.1.5:9092"
+  echo "Nifi @ edge                       : http://172.20.1.5:8080/nifi        & from host @ http://localhost:8080/nifi"
+  echo "Zeppelin @ zeppelin               : http://172.20.1.6:8081             & from host @ http://localhost:8081"
+  echo 
+  echo "Hadoop ports exposed = 9000"
+  echo "Spark ports exposed  = 4040, 6066, 7077"
+  echo 
 }
 
 function stopServices {
@@ -81,13 +86,13 @@ if [[ $1 = "install" ]]; then
   
   # 3 nodes
   echo ">> Starting master and worker nodes ..."
-  docker run -d --net sparknet --ip 172.20.1.1 -p 8088:8088 --hostname nodemaster --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --name nodemaster -it rsins/spark_cluster:hive
+  docker run -d --net sparknet --ip 172.20.1.1 -p 8088:8088 -p 18080:18080 -p 4040:4040 -p 6066:6066 -p 7077:7077 -p 9000:9000 --hostname nodemaster --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --name nodemaster -it rsins/spark_cluster:hive
   docker run -d --net sparknet --ip 172.20.1.2 --hostname node2 --add-host nodemaster:172.20.1.1 --add-host node3:172.20.1.3 --name node2 -it rsins/spark_cluster:spark
   docker run -d --net sparknet --ip 172.20.1.3 --hostname node3 --add-host nodemaster:172.20.1.1 --add-host node2:172.20.1.2 --name node3 -it rsins/spark_cluster:spark
   docker run -d --net sparknet --ip 172.20.1.5 --hostname edge --add-host nodemaster:172.20.1.1 --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --add-host psqlhms:172.20.1.4 --name edge -it rsins/spark_cluster:edge 
   docker run -d --net sparknet --ip 172.20.1.6 -p 8080:8080 --hostname nifi --add-host nodemaster:172.20.1.1 --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --add-host psqlhms:172.20.1.4 --name nifi -it rsins/spark_cluster:nifi 
-  docker run -d --net sparknet --ip 172.20.1.7  -p 8888:8888 --hostname huenode --add-host edge:172.20.1.5 --add-host nodemaster:172.20.1.1 --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --add-host psqlhms:172.20.1.4 --name hue -it rsins/spark_cluster:hue
-  docker run -d --net sparknet --ip 172.20.1.8  -p 8081:8081 --hostname zeppelin --add-host edge:172.20.1.5 --add-host nodemaster:172.20.1.1 --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --add-host psqlhms:172.20.1.4 --name zeppelin -it rsins/spark_cluster:zeppelin
+  docker run -d --net sparknet --ip 172.20.1.7 -p 8888:8888 --hostname huenode --add-host edge:172.20.1.5 --add-host nodemaster:172.20.1.1 --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --add-host psqlhms:172.20.1.4 --name hue -it rsins/spark_cluster:hue
+  docker run -d --net sparknet --ip 172.20.1.8 -p 8081:8081 --hostname zeppelin --add-host edge:172.20.1.5 --add-host nodemaster:172.20.1.1 --add-host node2:172.20.1.2 --add-host node3:172.20.1.3 --add-host psqlhms:172.20.1.4 --name zeppelin -it rsins/spark_cluster:zeppelin
 
   # Format nodemaster
   echo ">> Formatting hdfs ..."
@@ -106,6 +111,8 @@ fi
 if [[ $1 = "uninstall" ]]; then
   stopServices
   docker rmi rsins/spark_cluster:hadoop rsins/spark_cluster:spark rsins/spark_cluster:hive rsins/spark_cluster:postgresql-hms rsins/spark_cluster:hue rsins/spark_cluster:edge rsins/spark_cluster:nifi rsins/spark_cluster:zeppelin -f
+       # can comment it later after testing, this will clear containers but leave images
+  # docker ps -a | awk -F' ' '{print $1}' | tail -n +2 | xargs -I CC docker rm CC
   docker network rm sparknet
   docker system prune -f
   exit
